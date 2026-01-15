@@ -1,33 +1,52 @@
+import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
-import React from 'react';
-
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Platform } from 'react-native';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-      }}>
+    <Tabs screenOptions={{ 
+      tabBarActiveTintColor: '#4f46e5',
+      tabBarInactiveTintColor: '#94a3b8',
+      
+      // --- FIX 2: Taller Bar to avoid overlapping Android buttons ---
+      tabBarStyle: { 
+        height: Platform.OS === 'android' ? 90 : 90, // Taller on Android
+        paddingBottom: Platform.OS === 'android' ? 20 : 30, // Push icons up
+        paddingTop: 8,
+        backgroundColor: '#ffffff',
+        borderTopWidth: 0,
+        elevation: 10, // Adds a nice shadow on Android
+        shadowColor: '#000', // Adds shadow on iOS
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      
+      // Header settings (This controls the PURPLE bar)
+      headerStyle: { backgroundColor: '#4f46e5' },
+      headerTintColor: '#fff',
+      headerTitleStyle: { fontWeight: 'bold', fontSize: 18 },
+      headerTitleAlign: 'center',
+    }}>
+      
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: 'Create Record',
+          tabBarLabel: 'New Entry', // Shorter text fits better
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? "add-circle" : "add-circle-outline"} size={28} color={color} />
+          ),
         }}
       />
+      
       <Tabs.Screen
-        name="explore"
+        name="view-entries"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: 'All Entries',
+          tabBarLabel: 'History',
+          tabBarIcon: ({ color, focused }) => (
+             <Ionicons name={focused ? "list" : "list-outline"} size={28} color={color} />
+          ),
         }}
       />
     </Tabs>

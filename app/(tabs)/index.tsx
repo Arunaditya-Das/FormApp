@@ -1,98 +1,184 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { Link } from "expo-router";
+import React, { useEffect, useState } from "react";
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { Header } from "../../components/header";
+import { db, setupDatabase } from "../../db/database";
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+// --- Sub-Component: Styled Input Field ---
+const FormInput = ({
+  label,
+  placeholder,
+  value,
+  onChangeText,
+  keyboardType = "default",
+}: any) => (
+  <View className="mb-5">
+    <Text className="text-gray-500 font-medium mb-2 ml-1">{label}</Text>
+    <TextInput
+      className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm text-gray-800"
+      placeholder={placeholder}
+      placeholderTextColor="#9ca3af"
+      value={value}
+      onChangeText={onChangeText}
+      keyboardType={keyboardType}
+    />
+  </View>
+);
 
-export default function HomeScreen() {
+export default function Index() {
+  const [name, setName] = useState("");
+  const [userId, setUserId] = useState("");
+  const [phone, setPhone] = useState("");
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
+
+  const [showStart, setShowStart] = useState(false);
+  const [showEnd, setShowEnd] = useState(false);
+
+  const handleSave = () => {
+    try {
+      db.runSync(
+        "INSERT INTO records (user_id, name, phone, start_date, end_date) VALUES (?, ?, ?, ?, ?)",
+        [userId, name, phone, startDate.toISOString(), endDate.toISOString()]
+      );
+      Alert.alert("Success", "Record saved to local storage!");
+      // Clear form after save
+      reset();
+    } catch (error) {
+      Alert.alert("Error", "Failed to save data.");
+    }
+  };
+
+  const reset = () => {
+    setName("");
+    setUserId("");
+    setPhone("");
+    setStartDate(new Date());
+    setEndDate(new Date());
+  };
+
+  useEffect(() => {
+    setupDatabase(); // Runs once when the component mounts
+  }, []);
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      className="flex-1 bg-slate-200"
+    >
+      <Header title="CREATE RECORD" />
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      <ScrollView showsVerticalScrollIndicator={false} className="flex-1 p-10">
+        <View className="py-0">
+          <Text className="text-2xl font-extrabold text-slate-500 mx-1 mb-6">
+            Please put your details !
+          </Text>
+
+          {/* Form Fields */}
+          <FormInput
+            label="Full Name"
+            placeholder="John Doe"
+            value={name}
+            onChangeText={setName}
+          />
+          <FormInput
+            label="Employee/User ID"
+            placeholder="EX-1024"
+            value={userId}
+            onChangeText={setUserId}
+          />
+          <FormInput
+            label="Phone Number"
+            placeholder="+91 98765 43210"
+            value={phone}
+            onChangeText={setPhone}
+            keyboardType="phone-pad"
+          />
+
+          {/* Date Pickers Section */}
+          <View className="flex-row justify-between mb-8">
+            {/* Start Date */}
+            <View className="flex-1 mr-2">
+              <Text className="text-gray-500 font-medium mb-2 ml-1">
+                Start Date
+              </Text>
+              <TouchableOpacity
+                onPress={() => setShowStart(true)}
+                className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm items-center"
+              >
+                <Text className="text-indigo-600 font-semibold">
+                  {startDate.toLocaleDateString()}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* End Date */}
+            <View className="flex-1 ml-2">
+              <Text className="text-gray-500 font-medium mb-2 ml-1">
+                End Date
+              </Text>
+              <TouchableOpacity
+                onPress={() => setShowEnd(true)}
+                className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm items-center"
+              >
+                <Text className="text-indigo-600 font-semibold">
+                  {endDate.toLocaleDateString()}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Action Button */}
+          <TouchableOpacity
+            onPress={handleSave}
+            activeOpacity={0.8}
+            className="bg-indigo-600 p-5 rounded-2xl shadow-lg shadow-indigo-300 items-center mt-4"
+          >
+            <Text className="text-white font-bold text-lg">Save Record</Text>
+          </TouchableOpacity>
+          <Link href="/view-entries" asChild>
+            <TouchableOpacity className="mt-4 items-center">
+              <Text className="text-indigo-600 font-semibold">
+                View All Saved Entries →
+              </Text>
+            </TouchableOpacity>
+          </Link>
+        </View>
+
+        {/* Hidden Date Pickers (Modals) */}
+        {showStart && (
+          <DateTimePicker
+            value={startDate}
+            mode="date"
+            display={Platform.OS === "ios" ? "spinner" : "default"}
+            onChange={(e, d) => {
+              setShowStart(false);
+              if (d) setStartDate(d);
+            }}
+          />
+        )}
+        {showEnd && (
+          <DateTimePicker
+            value={endDate}
+            mode="date"
+            display={Platform.OS === "ios" ? "spinner" : "default"}
+            onChange={(e, d) => {
+              setShowEnd(false);
+              if (d) setEndDate(d);
+            }}
+          />
+        )}
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
