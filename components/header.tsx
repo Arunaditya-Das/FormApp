@@ -9,10 +9,10 @@ export const Header = ({ title }: HeaderProps) => {
     <Stack.Screen
       options={{
         title: title,
-        headerStyle: { backgroundColor: "#4f46e5" }, // Indigo-600
+        headerStyle: { backgroundColor: "#9575CD" }, // Indigo-600
         headerTintColor: "#fff",
-        headerTitleStyle: { fontWeight: "bold", fontSize: 20, fontFamily : "" },
-        headerShadowVisible: false,
+        headerTitleStyle: { fontWeight: "bold", fontSize: 20, fontFamily: "" },
+        headerShadowVisible: true,
         headerTitleAlign: "center", // Keeps it professional on both Android/iOS
       }}
     />
